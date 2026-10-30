@@ -130,13 +130,24 @@ textarea.inp{resize:vertical;min-height:90px;font-family:'Golos Text',sans-serif
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @keyframes fade{from{opacity:0}}
 @keyframes up{from{transform:translateY(40px);opacity:.4}}
+
+/* v8: icon alignment + primary iconbtn */
+.bigbtn{display:flex;align-items:center;justify-content:center;gap:8px;text-align:center}
+.bigbtn.ghost2{display:flex;align-items:center;justify-content:center;gap:8px}
+.x{display:inline-flex;align-items:center;justify-content:center}
+.chev{display:inline-flex;align-items:center;justify-content:center}
+.chip.add{display:inline-flex;align-items:center;justify-content:center}
+.tab.add{display:inline-flex;align-items:center;justify-content:center}
+.iconbtn.primary{background:#1a1a17;color:#fff;border-color:#1a1a17}
+.iconbtn.primary:active{background:#000;transform:scale(.94)}
+.mini svg,.bigbtn svg,.x svg,.cb svg,.icb svg,.chev svg,.chip svg,.iconbtn svg,.tab svg{flex:none;display:block}
 </style>
 </head>
 <body>
 <header class="top">
 <div class="row1">
 <div class="logo">ДНЕВНИК</div>
-<button class="icb" id="btnBackup" aria-label="Резервные копии">⋯</button>
+<button class="icb" id="btnBackup" aria-label="Резервные копии"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>
 </div>
 <div class="row2"><span id="todayLine"></span><span id="saveState" class="ok"><span class="sd"></span><span class="st">Сохранено</span></span></div>
 <nav class="tabs" id="tabs"></nav>
@@ -147,7 +158,7 @@ textarea.inp{resize:vertical;min-height:90px;font-family:'Golos Text',sans-serif
 <button data-cmd="italic" aria-label="Курсив"><i>К</i></button>
 <button data-cmd="underline" aria-label="Подчёркнутый"><u>Ч</u></button>
 <button data-cmd="h" aria-label="Заголовок">H</button>
-<button data-cmd="list" aria-label="Список">☰</button>
+<button data-cmd="list" aria-label="Список"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg></button>
 <button data-cmd="mark" data-mark="mk1" aria-label="Жёлтый маркер"><span class="dotc" style="background:#ffe58a"></span></button>
 <button data-cmd="mark" data-mark="mk2" aria-label="Зелёный маркер"><span class="dotc" style="background:#b7ebc6"></span></button>
 <button data-cmd="mark" data-mark="mk3" aria-label="Синий маркер"><span class="dotc" style="background:#bcdcff"></span></button>
@@ -157,11 +168,22 @@ textarea.inp{resize:vertical;min-height:90px;font-family:'Golos Text',sans-serif
 <input type="file" id="fileImp" accept=".json,application/json" hidden>
 <script>
 "use strict";
-var VERSION='v7';
+var VERSION='v8';
 var KEY='dnevnik.v2', KEY_BAK='dnevnik.v2.bak', KEY1='dnevnik.v1', LAST_EXP='dnevnik.lastExport', LAST_NAG='dnevnik.lastNag';
 var WD=['вс','пн','вт','ср','чт','пт','сб'];
 var MONTHS=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
 var state=null, modal=null, dlgSeq=0, saveT=null, termQuery='', _refocusPlan=null;
+var IC={
+  trash:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>',
+  more:'<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>',
+  cal:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>',
+  x:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>',
+  check:'<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+  chev:'<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
+  list:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>'
+};
 function $(s){ return document.querySelector(s); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
@@ -261,7 +283,7 @@ function openDialog(title, body, onOk, opts){
   closeModal();
   var seq=dlgSeq;
   var m=document.createElement('div'); m.className='mask';
-  m.innerHTML='<div class="sheet"><div class="shead"><b>'+esc(title)+'</b><button class="x" data-x aria-label="Закрыть">✕</button></div>'
+  m.innerHTML='<div class="sheet"><div class="shead"><b>'+esc(title)+'</b><button class="x" data-x aria-label="Закрыть">'+IC.x+'</button></div>'
     +'<div class="sbody">'+body+'</div>'
     +'<div class="sfoot"><button class="ghost" data-x>Отмена</button>'
     +'<button class="prime'+(opts.danger?' danger':'')+'" data-ok>'+esc(opts.ok||'Готово')+'</button></div></div>';
@@ -430,7 +452,7 @@ function renderTabs(){
   items.forEach(function(it){
     html+='<button class="tab'+(state.active===it[0]?' on':'')+'" data-tab="'+it[0]+'">'+esc(it[1])+'</button>';
   });
-  html+='<button class="tab add" id="tabAdd" aria-label="Новая вкладка">＋</button>';
+  html+='<button class="tab add" id="tabAdd" aria-label="Новая вкладка">'+IC.plus+'</button>';
   nav.innerHTML=html;
 }
 function hasBody(d){
@@ -443,7 +465,7 @@ function dayCard(d){
   var wd=WD[new Date(d.date+'T12:00:00').getDay()];
   return '<div class="card day'+(open?' open':'')+'" data-id="'+d.id+'">'
     +'<button class="drow" data-act="toggle">'
-    +'<span class="chev'+(open?' up':'')+'">▸</span>'
+    +'<span class="chev'+(open?' up':'')+'">'+IC.chev+'</span>'
     +'<span class="ddate">'+fmtHuman(d.date)+'</span>'
     +'<span class="dwd">'+wd+'</span>'
     +(String(d.title||'').trim()?'<span class="dtitle">'+esc(d.title)+'</span>':'')
@@ -451,8 +473,8 @@ function dayCard(d){
     +'</button>'
     +(open
       ?'<div class="dbody"><div class="dbar">'
-        +'<button class="mini" data-act="date">📅 Дата</button>'
-        +'<button class="mini danger" data-act="del">🗑 Удалить</button>'
+        +'<button class="mini" data-act="date">'+IC.cal+' Дата</button>'
+        +'<button class="mini danger" data-act="del">'+IC.trash+' Удалить</button>'
       +'</div>'
       +'<input class="titleinp" type="text" placeholder="Заголовок (необязательно)" value="'+esc(d.title)+'">'
       +'<div class="editor" id="editor" contenteditable="true" data-ph="Пиши сюда…">'+(d.content||'')+'</div>'
@@ -464,7 +486,7 @@ function renderDays(){
   var html='';
   if(!state.days.length) html+='<div class="empty">Дней пока нет.<br>Нажми «Новый день» — он появится в списке.</div>';
   html+=state.days.map(dayCard).join('');
-  html+='<button class="bigbtn" data-act="newday">＋ Новый день</button>';
+  html+='<button class="bigbtn" data-act="newday">'+IC.plus+' Новый день</button>';
   return html;
 }
 function planCard(p){
@@ -473,25 +495,25 @@ function planCard(p){
     +'<div class="prow">'
     +'<span class="pdate">'+fmtHuman(p.date)+(p.date===todayISO()?'<span class="chipc">сегодня</span>':'')+'</span>'
     +'<span class="pcount">'+done+'/'+p.items.length+'</span>'
-    +'<button class="mini" data-act="pdate">📅</button>'
-    +'<button class="mini danger" data-act="pdel">🗑</button>'
+    +'<button class="mini" data-act="pdate">'+IC.cal+'</button>'
+    +'<button class="mini danger" data-act="pdel">'+IC.trash+'</button>'
     +'</div>'
     +'<div class="pitems">'
     +p.items.map(function(i){
       return '<div class="pitem'+(i.done?' done':'')+'" data-item="'+i.id+'">'
-        +'<button class="cb" data-act="item">'+(i.done?'✓':'')+'</button>'
+        +'<button class="cb" data-act="item">'+(i.done?IC.check:'')+'</button>'
         +'<span class="ptext">'+esc(i.text)+'</span>'
-        +'<button class="x" data-act="delitem" aria-label="Удалить пункт">✕</button>'
+        +'<button class="x" data-act="delitem" aria-label="Удалить пункт">'+IC.x+'</button>'
         +'</div>';
     }).join('')
-    +'<div class="padd"><input class="iteminp" type="text" placeholder="Новый пункт…"><button class="mini" data-act="additem">＋</button></div>'
+    +'<div class="padd"><input class="iteminp" type="text" placeholder="Новый пункт…"><button class="mini" data-act="additem">'+IC.plus+'</button></div>'
     +'</div></div>';
 }
 function renderPlans(){
   var html='';
   if(!state.plans.length) html+='<div class="empty">Списков пока нет.<br>Создай первый — например, планы на завтра.</div>';
   html+=state.plans.map(planCard).join('');
-  html+='<button class="bigbtn" data-act="newplan">＋ Новый список</button>';
+  html+='<button class="bigbtn" data-act="newplan">'+IC.plus+' Новый список</button>';
   return html;
 }
 function activeGroup(){
@@ -508,8 +530,8 @@ function termList(g){
 function termCard(t){
   return '<div class="term" data-tid="'+t.id+'">'
     +'<div class="trow"><b class="tname">'+esc(t.term)+'</b>'
-    +'<button class="mini" data-act="tedit">✎</button>'
-    +'<button class="mini danger" data-act="tdel">🗑</button></div>'
+    +'<button class="mini" data-act="tedit">'+IC.edit+'</button>'
+    +'<button class="mini danger" data-act="tdel">'+IC.trash+'</button></div>'
     +(t.def?'<div class="tdef">'+esc(t.def)+'</div>':'')
     +'</div>';
 }
@@ -528,22 +550,22 @@ function renderTerms(){
     +state.termGroups.map(function(x){
       return '<button class="chip'+(x.id===state.termActive?' on':'')+'" data-act="tg" data-tg="'+x.id+'">'+esc(x.name)+'</button>';
     }).join('')
-    +'<button class="chip add" data-act="tgadd" aria-label="Новая группа">＋</button>'
     +'</div>'
-    +'<button class="iconbtn" data-act="tgmore" aria-label="Управление группой">⋯</button>'
+    +'<button class="iconbtn primary" data-act="termadd" aria-label="Добавить термин">'+IC.plus+'</button>'
+    +'<button class="iconbtn" data-act="tgmore" aria-label="Управление группой">'+IC.more+'</button>'
     +'</div>'
     +'<div class="tbar"><input id="termSearch" type="search" placeholder="Поиск…" value="'+esc(termQuery)+'">'
     +'<button class="ghost" data-act="termsort">'+(state.termSort==='az'?'А–Я':'Новые')+'</button></div>'
     +'<div id="termList">'+(list.length
       ?list.map(termCard).join('')
       :'<div class="empty">'+(g.terms.length?'Ничего не найдено':'Пока пусто. Добавь первый термин.')+'</div>')+'</div>'
-    +'<button class="bigbtn" data-act="termadd">＋ Добавить термин</button>'
-    +'<p class="hint">У каждой группы — свой словарь. Плюсик рядом с названиями создаёт новую группу, ⋯ — переименовать или удалить.</p>';
+    +'<button class="bigbtn" data-act="termadd">'+IC.plus+' Добавить термин</button>'
+    +'<p class="hint">Каждая группа — отдельный словарь, термины не смешиваются.</p>';
 }
 function renderSection(){
   var s=state.sections.find(function(x){ return x.id===state.active; });
   if(!s) return renderDays();
-  return '<div class="sechead"><h2>'+esc(s.name)+'</h2><button class="mini" data-act="secmenu">⋯</button></div>'
+  return '<div class="sechead"><h2>'+esc(s.name)+'</h2><button class="mini" data-act="secmenu">'+IC.more+'</button></div>'
     +'<div class="card pad"><div class="editor big" id="editor" contenteditable="true" data-ph="Пиши сюда…">'+(s.content||'')+'</div></div>';
 }
 function render(skipSync){
@@ -645,10 +667,15 @@ function groupMenu(){
   var g=activeGroup();
   var many=state.termGroups.length>1;
   openDialog('Группа «'+g.name+'»',
-    '<button class="bigbtn ghost2" id="gRen" style="margin-top:0">Переименовать группу</button>'
+    '<button class="bigbtn ghost2" id="gNew" style="margin-top:0">Создать новую группу</button>'
+    +'<button class="bigbtn ghost2" id="gRen">Переименовать группу</button>'
     +(many?'<button class="bigbtn ghost2" id="gDel">Удалить группу</button>':'')
     +'<p class="hint">У каждой группы свой словарь — термины не видны и не копируются в другие группы.</p>',
     null,{ok:'Закрыть'});
+  $('#gNew').addEventListener('click',function(){
+    closeModal();
+    setTimeout(function(){ askText('Новая группа','',function(v){ addGroup(v); },'Например: Английский'); },120);
+  });
   $('#gRen').addEventListener('click',function(){
     askText('Название группы',g.name,function(v){ g.name=v; persist(); render(); });
   });
